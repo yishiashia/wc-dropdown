@@ -1,0 +1,26 @@
+{
+  "name": "wc-dropdown",
+  "version": "1.0.0",
+  "description": "Dropdown menu web component",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yishiashia/wc-dropdown.git"
+  },
+  "keywords": [
+    "dropdown",
+    "menu",
+    "select",
+    "option",
+    "webcomponent"
+  ],
+  "author": "yishiashia <yishiashia@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yishiashia/wc-dropdown/issues"
+  },
+  "homepage": "https://github.com/yishiashia/wc-dropdown#readme"
+}
