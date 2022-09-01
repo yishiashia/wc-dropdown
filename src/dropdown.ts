@@ -34,6 +34,7 @@ export default class Dropdown extends HTMLElement {
   inputRef: HTMLElement | null
   resultRef: HTMLElement | null
   optionsRef: HTMLElement | null
+  cursor: number
 
   constructor () {
     super()
@@ -46,10 +47,9 @@ export default class Dropdown extends HTMLElement {
     this.hideMenu = this.hideMenu.bind(this)
     this.focus = this.focus.bind(this)
     this.blur = this.blur.bind(this)
-    this.mouseEnter = this.mouseEnter.bind(this)
-    this.mouseLeave = this.mouseLeave.bind(this)
     this.handleKeyup = this.handleKeyup.bind(this)
     this.handleKeydown = this.handleKeydown.bind(this)
+    this.isExpand = this.isExpand.bind(this)
 
     // Refs
     this.props = {
@@ -62,6 +62,7 @@ export default class Dropdown extends HTMLElement {
     this.inputRef = null
     this.resultRef = null
     this.optionsRef = null
+    this.cursor = -1
   }
 
   connectedCallback () {
@@ -92,13 +93,8 @@ export default class Dropdown extends HTMLElement {
         this.inputRef.addEventListener('click', this.toggleMenu)
         this.inputRef.addEventListener('focus', this.focus)
         this.inputRef.addEventListener('blur', this.blur)
-        this.inputRef.addEventListener('mouseenter', this.mouseEnter)
-        this.inputRef.addEventListener('mouseleave', this.mouseLeave)
         this.inputRef.addEventListener('keyup', this.handleKeyup)
         this.inputRef.addEventListener('keydown', this.handleKeydown)
-      }
-      if (this.resultRef !== null) {
-        this.resultRef.addEventListener('click', this.toggleMenu)
       }
     }
   }
@@ -149,27 +145,92 @@ export default class Dropdown extends HTMLElement {
   }
 
   focus(): void {
-
+    if (this.menuRef !== null) {
+      this.menuRef.classList.add('focused')
+    }
   }
 
   blur(): void {
-
+    this.hideMenu()
+    if (this.menuRef !== null) {
+      this.menuRef.classList.remove('focused')
+    }
   }
 
-  mouseEnter () {
-
+  handleKeyup (e: KeyboardEvent) {
+    if(e.key != "Tab") {
+      e.preventDefault()
+      if(e.key == " " || e.key == "Enter") {
+        if (!this.isExpand()) {
+          this.expandMenu()
+        } else {
+          if(this.cursor >= 0 && this.cursor < this.props.options.length) {
+            this.setSelectedOption(this.cursor)
+          }
+          this.hideMenu()
+        }
+      } else if(e.key == "ArrowDown") {
+        if (!this.isExpand()) {
+          this.expandMenu()
+        } else {
+          this.setCursor((this.cursor + 1) % this.props.options.length)
+        }
+      } else if(e.key == "ArrowUp") {
+        if (!this.isExpand()) {
+          this.expandMenu()
+        } else {
+          this.setCursor((this.props.options.length + this.cursor - 1) % this.props.options.length)
+        }
+      } else if(e.key == "Escape") {
+        this.hideMenu()
+        this.cursor = -1
+      } else if(e.key.match(/^[a-zA-Z0-9]$/)) {
+        if(Array.isArray(this.props.options)) {
+          let option_cursor = this.cursor
+          let found = this.props.options.findIndex(function(element, index) {
+            return element.name.toUpperCase().startsWith(e.key.toUpperCase()) && index > option_cursor
+          })
+          if(found < 0) {
+            found = this.props.options.findIndex(function(element, index) {
+              return element.name.toUpperCase().startsWith(e.key.toUpperCase())
+            })
+          }
+          if(found >= 0) {
+            this.scrollToIndex(found)
+            this.setCursor(found)
+          }
+        }
+      }
+    } else {
+      this.hideMenu()
+    }
   }
 
-  mouseLeave () {
-
+  handleKeydown(e: KeyboardEvent) {
+    if(e.key != "Tab") {
+      e.preventDefault()
+    }
   }
 
-  handleKeyup () {
-
+  isExpand() {
+    return this.menuRef !== null && this.menuRef.classList.contains('expand')
   }
 
-  handleKeydown () {
+  setSelectedOption(cursor: number) {
+    // TODO
+    console.log("select", cursor)
+  }
 
+  scrollToIndex(index: number) {
+    // TODO
+    console.log("scrollTo", index)
+  }
+
+  setCursor(index: number) {
+    if (index >= 0 && Array.isArray(this.props.options) && index < this.props.options.length) {
+      this.cursor = index
+      console.log("cursorTo", index)
+    }
   }
 
   template(data: {name: string; value: string; placeholder: string;}) {

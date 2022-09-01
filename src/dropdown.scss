@@ -143,12 +143,21 @@ input.custom.replaced {
       transition: 100ms ease all;
     }
   }
-  &.focus {
+  &.focused {
     .select-result {
       &:after {
         border: solid #0199F8;
-        border-width: 0 3px 3px 0;
+        border-width: 0 0 3px 3px;
       }
+    }
+  }
+}
+
+.custom-select-input:hover + .custom-select {
+  .select-result {
+    &:after {
+      border: solid #0199F8;
+      border-width: 0 0 3px 3px;
     }
   }
 }
