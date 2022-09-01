@@ -30,6 +30,7 @@ export default class Dropdown extends HTMLElement {
     placeholder: string;
     options: { name: string, value: string }[]
   }
+  menuRef: HTMLElement | null
   inputRef: HTMLElement | null
   resultRef: HTMLElement | null
   optionsRef: HTMLElement | null
@@ -40,7 +41,9 @@ export default class Dropdown extends HTMLElement {
 
     // Member functions
     this.setupOptions = this.setupOptions.bind(this)
+    this.toggleMenu = this.toggleMenu.bind(this)
     this.expandMenu = this.expandMenu.bind(this)
+    this.hideMenu = this.hideMenu.bind(this)
     this.focus = this.focus.bind(this)
     this.blur = this.blur.bind(this)
     this.mouseEnter = this.mouseEnter.bind(this)
@@ -55,6 +58,7 @@ export default class Dropdown extends HTMLElement {
       placeholder: '',
       options: []
     }
+    this.menuRef = null
     this.inputRef = null
     this.resultRef = null
     this.optionsRef = null
@@ -72,8 +76,9 @@ export default class Dropdown extends HTMLElement {
 
       // DOM
       this.shadowRoot.innerHTML = this.template(this.props)
+      this.menuRef = this.shadowRoot.querySelector('.custom-select')
       this.inputRef = this.shadowRoot.querySelector('input')
-      this.resultRef = this.shadowRoot.querySelector('.select-selected')
+      this.resultRef = this.shadowRoot.querySelector('.select-result')
       this.optionsRef = this.shadowRoot.querySelector('#optionsRef')
       this.setupOptions()
 
@@ -84,7 +89,7 @@ export default class Dropdown extends HTMLElement {
 
       // Events
       if (this.inputRef !== null) {
-        this.inputRef.addEventListener('click', this.expandMenu)
+        this.inputRef.addEventListener('click', this.toggleMenu)
         this.inputRef.addEventListener('focus', this.focus)
         this.inputRef.addEventListener('blur', this.blur)
         this.inputRef.addEventListener('mouseenter', this.mouseEnter)
@@ -93,7 +98,7 @@ export default class Dropdown extends HTMLElement {
         this.inputRef.addEventListener('keydown', this.handleKeydown)
       }
       if (this.resultRef !== null) {
-        this.resultRef.addEventListener('click', this.expandMenu)
+        this.resultRef.addEventListener('click', this.toggleMenu)
       }
     }
   }
@@ -113,10 +118,33 @@ export default class Dropdown extends HTMLElement {
     }
   }
 
+  toggleMenu(): void {
+    if (this.menuRef !== null) {
+      if (this.menuRef.classList.contains('expand')) {
+        this.hideMenu()
+      } else {
+        this.expandMenu()
+      }
+    }
+  }
+
   expandMenu(): void {
     const menu = this.shadowRoot?.querySelector('.select-items')
     if (menu !== null && menu !== undefined) {
       menu.classList.remove('select-hide')
+    }
+    if (this.menuRef !== null) {
+      this.menuRef.classList.add('expand')
+    }
+  }
+
+  hideMenu(): void {
+    const menu = this.shadowRoot?.querySelector('.select-items')
+    if (menu !== null && menu !== undefined) {
+      menu.classList.add('select-hide')
+    }
+    if (this.menuRef !== null) {
+      this.menuRef.classList.remove('expand')
     }
   }
 
@@ -156,7 +184,7 @@ export default class Dropdown extends HTMLElement {
           style="z-index: 10"
         />
         <div class="custom-select">
-          <div class="select-selected form-control select-arrow-active">
+          <div class="select-result form-control">
             ${data.placeholder}
           </div>
           <div id="optionsRef" class="shadow-sm select-items select-hide">

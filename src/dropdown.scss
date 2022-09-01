@@ -1,5 +1,6 @@
 .container {
   position: relative;
+  border: 1px solid rgb(206, 212, 218); position: relative;
 }
 
 .custom-select {
@@ -11,7 +12,7 @@
   display: none;
 }
 
-.select-selected:after {
+.select-result:after {
   float: right;
   position: relative;
   content: "";
@@ -20,24 +21,25 @@
   height: 0;
 }
 
-.select-items div, .select-selected {
-  color: #000;
-  padding: 8px 16px;
-  border: 1px solid transparent;
-  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
-  cursor: pointer;
-  user-select: none;
-}
-
 .select-items {
   width: 100%;
   position: absolute;
   background-color: #fff;
-  top: calc(100% + 2px);
+  top: calc(100% + 1px);
   left: 0;
   right: 0;
   z-index: 99;
   border-color: #ced4da;
+  box-sizing: border-box;
+  .select-option, .select-result {
+    color: #000;
+    padding: 8px 16px;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    user-select: none;
+  }
 }
 
 /* hide the items when the select box is closed */
@@ -45,7 +47,7 @@
   display: none;
 }
 
-.select-items div:hover, .same-as-selected {
+.select-items div:hover, .select-selected {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
@@ -87,11 +89,28 @@ input.custom.replaced {
   top: 0;
   left: 0;
   width: 100%;
+  height: 100%;
   padding: 0px !important;
   border: 0 !important;
-  .select-selected {
-    display: block;
-    padding: 0 8px 0 2px;
+  &.expand .select-result {
+    &:after {
+      transform: rotate(135deg);
+      -webkit-transform: rotate(135deg);
+      top: calc(50% - 0.175rem);
+
+      -webkit-transition: 100ms ease all;
+      -moz-transition: 100ms ease all;
+      -o-transition: 100ms ease all;
+      transition: 100ms ease all;
+    }
+  }
+  .select-result {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
@@ -102,29 +121,30 @@ input.custom.replaced {
     color: #121212;
     letter-spacing: -0.4px;
     &:after {
-      display: block;
+      position: absolute;
+      right: 1rem;
+      top: calc(50% - .375rem);
+
+      display: inline-block;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
 
       border: solid #01BBFE;
-      border-width: 0 3px 3px 0;
-      display: inline-block;
+      border-width: 0 0 3px 3px;
       padding: 3px;
 
-      transform: rotate(45deg);
-      -webkit-transform: rotate(45deg);
-    }
-    &.select-arrow-active {
-      &:after {
-        transform: rotate(-135deg);
-        -webkit-transform: rotate(-135deg);
-        top: 20px;
-      }
+      transform: rotate(-45deg);
+      -webkit-transform: rotate(-45deg);
+
+      -webkit-transition: 100ms ease all;
+      -moz-transition: 100ms ease all;
+      -o-transition: 100ms ease all;
+      transition: 100ms ease all;
     }
   }
   &.focus {
-    .select-selected {
+    .select-result {
       &:after {
         border: solid #0199F8;
         border-width: 0 3px 3px 0;
@@ -143,6 +163,7 @@ input.custom.replaced {
 .custom-select-input {
   border-bottom: 2px solid #9fb6cb;
   height: 39px;
+  padding: 0px;
   &.editable {
     font-weight: 400;
     outline: 0;
@@ -162,4 +183,8 @@ input.custom.replaced {
       border-bottom: 2px solid #0199F8;
     }
   }
+}
+
+.shadow-sm {
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
 }
