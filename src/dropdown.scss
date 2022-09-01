@@ -142,6 +142,9 @@ input.custom.replaced {
       -o-transition: 100ms ease all;
       transition: 100ms ease all;
     }
+    &.placeholder {
+      color: #999;
+    }
   }
   &.focused {
     .select-result {

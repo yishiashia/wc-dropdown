@@ -30,8 +30,9 @@ export default class Dropdown extends HTMLElement {
     placeholder: string;
     options: { name: string, value: string }[]
   }
+  rootRef: HTMLElement | null
   menuRef: HTMLElement | null
-  inputRef: HTMLElement | null
+  inputRef: HTMLInputElement | null
   resultRef: HTMLElement | null
   optionsRef: HTMLElement | null
   cursor: number
@@ -50,6 +51,7 @@ export default class Dropdown extends HTMLElement {
     this.handleKeyup = this.handleKeyup.bind(this)
     this.handleKeydown = this.handleKeydown.bind(this)
     this.isExpand = this.isExpand.bind(this)
+    this.chooseOption = this.chooseOption.bind(this)
 
     // Refs
     this.props = {
@@ -58,6 +60,7 @@ export default class Dropdown extends HTMLElement {
       placeholder: '',
       options: []
     }
+    this.rootRef = null
     this.menuRef = null
     this.inputRef = null
     this.resultRef = null
@@ -77,6 +80,7 @@ export default class Dropdown extends HTMLElement {
 
       // DOM
       this.shadowRoot.innerHTML = this.template(this.props)
+      this.rootRef = this.shadowRoot.querySelector('.container')
       this.menuRef = this.shadowRoot.querySelector('.custom-select')
       this.inputRef = this.shadowRoot.querySelector('input')
       this.resultRef = this.shadowRoot.querySelector('.select-result')
@@ -92,9 +96,11 @@ export default class Dropdown extends HTMLElement {
       if (this.inputRef !== null) {
         this.inputRef.addEventListener('click', this.toggleMenu)
         this.inputRef.addEventListener('focus', this.focus)
-        this.inputRef.addEventListener('blur', this.blur)
         this.inputRef.addEventListener('keyup', this.handleKeyup)
         this.inputRef.addEventListener('keydown', this.handleKeydown)
+      }
+      if (this.rootRef !== null) {
+        this.rootRef.addEventListener('blur', this.blur)
       }
     }
   }
@@ -103,14 +109,21 @@ export default class Dropdown extends HTMLElement {
   }
 
   setupOptions(): void {
-    if (this.optionsRef !== null && Array.isArray(this.props.options)) {
-      this.optionsRef.innerHTML = this.props.options.map(
-        (option, index) =>`
-          <div class="select-option" value="${option.value}" data-index="${index}">
-            <span data-index="${index}">${option.name}</span>
-          </div>
-        `
-      ).join('')
+    const _self = this
+    if (_self.optionsRef !== null && Array.isArray(_self.props.options)) {
+      _self.optionsRef.innerHTML = ''
+      _self.props.options.forEach((option, index) => {
+        const optionSpan = document.createElement('span')
+        const optionDiv = document.createElement('div')
+        optionSpan.setAttribute('data-index', String(index))
+        optionSpan.textContent = option.name
+        optionDiv.classList.add('select-option')
+        optionDiv.setAttribute('value', option.value)
+        optionDiv.setAttribute('data-index', String(index))
+        optionDiv.appendChild(optionSpan)
+        optionDiv.addEventListener('click', this.chooseOption)
+        _self.optionsRef?.appendChild(optionDiv)
+      })
     }
   }
 
@@ -145,6 +158,9 @@ export default class Dropdown extends HTMLElement {
   }
 
   focus(): void {
+    if (this.rootRef !== null) {
+      this.rootRef.focus()
+    }
     if (this.menuRef !== null) {
       this.menuRef.classList.add('focused')
     }
@@ -216,9 +232,25 @@ export default class Dropdown extends HTMLElement {
     return this.menuRef !== null && this.menuRef.classList.contains('expand')
   }
 
+  chooseOption(e: Event) {
+    const el = e.target as HTMLElement
+    if (el.hasAttribute('data-index')) {
+      this.setSelectedOption(parseInt(String(el.getAttribute('data-index'))))
+    }
+  }
+
   setSelectedOption(cursor: number) {
     // TODO
-    console.log("select", cursor)
+    if (!isNaN(cursor) && cursor >= 0 && cursor < this.props.options.length) {
+      if (this.inputRef !== null) {
+        this.inputRef.value = this.props.options[cursor].value
+      }
+      if (this.resultRef !== null) {
+        this.resultRef.classList.remove('placeholder')
+        this.resultRef.textContent = this.props.options[cursor].name
+        this.hideMenu()
+      }
+    }
   }
 
   scrollToIndex(index: number) {
@@ -235,17 +267,18 @@ export default class Dropdown extends HTMLElement {
 
   template(data: {name: string; value: string; placeholder: string;}) {
     return `
-      <div class="container">
+      <div class="container" tabindex="0">
         <input
+          placeholder="${data.placeholder}
           type="text"
           class="custom replaced custom-select-input"
-          name=${data.name}
-          value=${data.value}
+          name="${data.name}"
+          value="${data.value}"
           readonly="readonly"
           style="z-index: 10"
         />
         <div class="custom-select">
-          <div class="select-result form-control">
+          <div class="select-result form-control placeholder">
             ${data.placeholder}
           </div>
           <div id="optionsRef" class="shadow-sm select-items select-hide">
