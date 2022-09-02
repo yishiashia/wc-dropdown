@@ -42,17 +42,29 @@
     cursor: pointer;
     user-select: none;
   }
+  // &:hover {
+  //   .select-option.hover {
+  //     background-color: #fff;
+  //     color: #000;
+  //   }
+  // }
+  .select-option {
+    &.select-selected {
+      // background-color: rgba(0, 0, 0, 0.1);
+      color: #0199F8;
+    }
+    &:hover,
+    &.hover {
+      background-color: #01BBFE;
+      color: white;
+    }
+  }
 }
 
 /* hide the items when the select box is closed */
 .select-hide {
   display: none;
 }
-
-.select-items div:hover, .select-selected {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
 /* ==== */
 
 .select {

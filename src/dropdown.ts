@@ -33,7 +33,7 @@ function getArrayAttribute (element: Dropdown, attr: string) {
 
 export default class Dropdown extends HTMLElement {
 
-  props: {
+  #props: {
     name: string
     value: string
     placeholder: string
@@ -41,12 +41,14 @@ export default class Dropdown extends HTMLElement {
     startitem: number
     maxitems: number
   }
-  rootRef: HTMLElement | null
-  menuRef: HTMLElement | null
-  inputRef: HTMLInputElement | null
-  resultRef: HTMLElement | null
-  optionsRef: HTMLElement | null
-  cursor: number
+  #rootRef: HTMLElement | null
+  #menuRef: HTMLElement | null
+  #inputRef: HTMLInputElement | null
+  #resultRef: HTMLElement | null
+  #optionsRef: HTMLElement | null
+  #cursor: number
+  #scrollIndex: number
+  #selectIndex: number
 
   constructor () {
     super()
@@ -57,15 +59,15 @@ export default class Dropdown extends HTMLElement {
     this.toggleMenu = this.toggleMenu.bind(this)
     this.expandMenu = this.expandMenu.bind(this)
     this.hideMenu = this.hideMenu.bind(this)
-    this.focus = this.focus.bind(this)
-    this.blur = this.blur.bind(this)
+    this.handlefocus = this.handlefocus.bind(this)
+    this.handleblur = this.handleblur.bind(this)
     this.handleKeyup = this.handleKeyup.bind(this)
     this.handleKeydown = this.handleKeydown.bind(this)
-    this.isExpand = this.isExpand.bind(this)
     this.chooseOption = this.chooseOption.bind(this)
+    this.mouseEnter = this.mouseEnter.bind(this)
 
     // Refs
-    this.props = {
+    this.#props = {
       name: '',
       value: '',
       placeholder: '',
@@ -73,18 +75,20 @@ export default class Dropdown extends HTMLElement {
       startitem: 0,
       maxitems: 0
     }
-    this.rootRef = null
-    this.menuRef = null
-    this.inputRef = null
-    this.resultRef = null
-    this.optionsRef = null
-    this.cursor = -1
+    this.#rootRef = null
+    this.#menuRef = null
+    this.#inputRef = null
+    this.#resultRef = null
+    this.#optionsRef = null
+    this.#cursor = -1
+    this.#scrollIndex = 0
+    this.#selectIndex = -1
   }
 
   connectedCallback () {
     if (this.shadowRoot !== null) {
       // Props
-      this.props = {
+      this.#props = {
         name: getStrAttribute(this, 'name'),
         value: getStrAttribute(this, 'value'),
         placeholder: getStrAttribute(this, 'placeholder'),
@@ -94,12 +98,12 @@ export default class Dropdown extends HTMLElement {
       }
 
       // DOM
-      this.shadowRoot.innerHTML = this.template(this.props)
-      this.rootRef = this.shadowRoot.querySelector('.container')
-      this.menuRef = this.shadowRoot.querySelector('.custom-select')
-      this.inputRef = this.shadowRoot.querySelector('input')
-      this.resultRef = this.shadowRoot.querySelector('.select-result')
-      this.optionsRef = this.shadowRoot.querySelector('#optionsRef')
+      this.shadowRoot.innerHTML = this.template(this.#props)
+      this.#rootRef = this.shadowRoot.querySelector('.container')
+      this.#menuRef = this.shadowRoot.querySelector('.custom-select')
+      this.#inputRef = this.shadowRoot.querySelector('input')
+      this.#resultRef = this.shadowRoot.querySelector('.select-result')
+      this.#optionsRef = this.shadowRoot.querySelector('#optionsRef')
       this.setupOptions()
 
       // Style
@@ -108,16 +112,16 @@ export default class Dropdown extends HTMLElement {
       this.shadowRoot.appendChild(styleElement)
 
       // Events
-      if (this.inputRef !== null) {
-        this.inputRef.addEventListener('click', this.toggleMenu)
-        this.inputRef.addEventListener('focus', this.focus)
-        this.inputRef.addEventListener('keyup', this.handleKeyup)
-        this.inputRef.addEventListener('keydown', this.handleKeydown)
+      if (this.#inputRef !== null) {
+        this.#inputRef.addEventListener('click', this.toggleMenu)
+        this.#inputRef.addEventListener('focus', this.handlefocus)
+        this.#inputRef.addEventListener('keyup', this.handleKeyup)
+        this.#inputRef.addEventListener('keydown', this.handleKeydown)
       }
-      if (this.rootRef !== null) {
-        this.rootRef.addEventListener('blur', this.blur)
-        this.rootRef.addEventListener('keyup', this.handleKeyup)
-        this.rootRef.addEventListener('keydown', this.handleKeydown)
+      if (this.#rootRef !== null) {
+        this.#rootRef.addEventListener('blur', this.handleblur)
+        this.#rootRef.addEventListener('keyup', this.handleKeyup)
+        this.#rootRef.addEventListener('keydown', this.handleKeydown)
       }
     }
   }
@@ -127,9 +131,9 @@ export default class Dropdown extends HTMLElement {
 
   setupOptions(): void {
     const _self = this
-    if (_self.optionsRef !== null && Array.isArray(_self.props.options)) {
-      _self.optionsRef.innerHTML = ''
-      _self.props.options.forEach((option, index) => {
+    if (_self.#optionsRef !== null && Array.isArray(_self.#props.options)) {
+      _self.#optionsRef.innerHTML = ''
+      _self.#props.options.forEach((option, index) => {
         const optionSpan = document.createElement('span')
         const optionDiv = document.createElement('div')
         optionSpan.setAttribute('data-index', String(index))
@@ -139,14 +143,15 @@ export default class Dropdown extends HTMLElement {
         optionDiv.setAttribute('data-index', String(index))
         optionDiv.appendChild(optionSpan)
         optionDiv.addEventListener('click', this.chooseOption)
-        _self.optionsRef?.appendChild(optionDiv)
+        optionDiv.addEventListener('mouseenter', this.mouseEnter)
+        _self.#optionsRef?.appendChild(optionDiv)
       })
     }
   }
 
   toggleMenu(): void {
-    if (this.menuRef !== null) {
-      if (this.menuRef.classList.contains('expand')) {
+    if (this.#menuRef !== null) {
+      if (this.#menuRef.classList.contains('expand')) {
         this.hideMenu()
       } else {
         this.expandMenu()
@@ -159,15 +164,15 @@ export default class Dropdown extends HTMLElement {
     if (menu !== null && menu !== undefined) {
       menu.classList.remove('select-hide')
     }
-    if (this.menuRef !== null) {
-      this.menuRef.classList.add('expand')
+    if (this.#menuRef !== null) {
+      this.#menuRef.classList.add('expand')
     }
-    if (this.optionsRef !== null) {
-      if (this.props.maxitems <= 0 || this.props.maxitems >= this.props.options.length) {
-        this.optionsRef.style.overflowY = 'hidden'
+    if (this.#optionsRef !== null) {
+      if (!this.#isScrollable()) {
+        this.#optionsRef.style.overflowY = 'hidden'
       }
-      if (this.menuHeight() > 0) {
-        this.optionsRef.style.height = `${this.menuHeight()}px`
+      if (this.#menuHeight() > 0) {
+        this.#optionsRef.style.height = `${this.#menuHeight()}px`
       }
     }
   }
@@ -177,69 +182,97 @@ export default class Dropdown extends HTMLElement {
     if (menu !== null && menu !== undefined) {
       menu.classList.add('select-hide')
     }
-    if (this.menuRef !== null) {
-      this.menuRef.classList.remove('expand')
+    if (this.#menuRef !== null) {
+      this.#menuRef.classList.remove('expand')
     }
   }
 
-  focus(): void {
-    if (this.rootRef !== null) {
-      this.rootRef.focus()
+  handlefocus(): void {
+    if (this.#rootRef !== null) {
+      this.#rootRef.focus()
     }
-    if (this.menuRef !== null) {
-      this.menuRef.classList.add('focused')
+    if (this.#menuRef !== null) {
+      this.#menuRef.classList.add('focused')
     }
   }
 
-  blur(): void {
-    this.hideMenu()
-    if (this.menuRef !== null) {
-      this.menuRef.classList.remove('focused')
+  handleblur(e: FocusEvent): void {
+    if (this.shadowRoot !== null) {
+      const target = e.relatedTarget as Node | null
+      if (!this.shadowRoot.contains(target)) {
+        this.hideMenu()
+        if (this.#menuRef !== null) {
+          this.#menuRef.classList.remove('focused')
+        }
+      }
     }
   }
 
   handleKeyup (e: KeyboardEvent) {
     if(e.key != "Tab") {
       e.preventDefault()
-      e.stopPropagation()
+    }
+  }
+
+  handleKeydown(e: KeyboardEvent) {
+    if(e.key != "Tab") {
+      e.preventDefault()
       if(e.key == " " || e.key == "Enter") {
-        if (!this.isExpand()) {
+        if (!this.#isExpand()) {
           this.expandMenu()
+          if (this.#selectIndex >= 0) {
+            // this.#setCursor(this.#selectIndex)
+            this.#cursor = this.#selectIndex
+          } else {
+            this.#setCursor(0)
+          }
         } else {
-          if(this.cursor >= 0 && this.cursor < this.props.options.length) {
-            this.setSelectedOption(this.cursor)
+          if(this.#cursor >= 0 && this.#cursor < this.#props.options.length) {
+            this.setSelectedOption(this.#cursor)
           }
           this.hideMenu()
         }
       } else if(e.key == "ArrowDown") {
-        if (!this.isExpand()) {
+        if (!this.#isExpand()) {
           this.expandMenu()
+          if (this.#selectIndex >= 0) {
+            // this.#setCursor(this.#selectIndex)
+            this.#cursor = this.#selectIndex
+          } else {
+            this.#setCursor(0)
+          }
         } else {
-          this.setCursor((this.cursor + 1) % this.props.options.length)
+          this.#setCursor( (this.#cursor + 1) % this.#props.options.length)
         }
       } else if(e.key == "ArrowUp") {
-        if (!this.isExpand()) {
+        if (!this.#isExpand()) {
           this.expandMenu()
+          if (this.#selectIndex >= 0) {
+            // this.#setCursor(this.#selectIndex)
+            this.#cursor = this.#selectIndex
+          } else {
+            this.#setCursor(0)
+          }
         } else {
-          this.setCursor((this.props.options.length + this.cursor - 1) % this.props.options.length)
+          this.#setCursor((this.#props.options.length + this.#cursor - 1) % this.#props.options.length)
         }
       } else if(e.key == "Escape") {
         this.hideMenu()
-        this.cursor = -1
+        this.#cursor = -1
       } else if(e.key.match(/^[a-zA-Z0-9]$/)) {
-        if(Array.isArray(this.props.options)) {
-          let option_cursor = this.cursor
-          let found = this.props.options.findIndex(function(element, index) {
+        if(Array.isArray(this.#props.options)) {
+          let option_cursor = this.#cursor
+          let found = this.#props.options.findIndex(function(element, index) {
             return element.name.toUpperCase().startsWith(e.key.toUpperCase()) && index > option_cursor
           })
           if(found < 0) {
-            found = this.props.options.findIndex(function(element, index) {
+            found = this.#props.options.findIndex(function(element, index) {
               return element.name.toUpperCase().startsWith(e.key.toUpperCase())
             })
           }
           if(found >= 0) {
-            this.scrollToIndex(found)
-            this.setCursor(found)
+            this.#scrollToIndex(found)
+            this.#setCursor(found)
           }
         }
       }
@@ -248,20 +281,17 @@ export default class Dropdown extends HTMLElement {
     }
   }
 
-  handleKeydown(e: KeyboardEvent) {
-    if(e.key != "Tab") {
-      e.preventDefault()
-      e.stopPropagation()
-    }
+  #isExpand() {
+    return this.#menuRef !== null && this.#menuRef.classList.contains('expand')
   }
 
-  isExpand() {
-    return this.menuRef !== null && this.menuRef.classList.contains('expand')
+  #isScrollable() {
+    return this.#props.maxitems > 0 && this.#props.maxitems < this.#props.options.length
   }
 
-  menuHeight () {
-    if (this.props.options.length > 0 && this.rootRef !== null) {
-      const element = this.rootRef.querySelector('.select-option')
+  #singleOptionHeight () {
+    if (this.#props.options.length > 0 && this.#rootRef !== null) {
+      const element = this.#rootRef.querySelector('.select-option')
       if (element !== null) {
         const style = window.getComputedStyle(element)
         const singleOptionHeight =
@@ -270,14 +300,19 @@ export default class Dropdown extends HTMLElement {
           Number(style.paddingBottom.replace('px', '')) +
           Number(style.borderTopWidth.replace('px', '')) +
           Number(style.borderBottomWidth.replace('px', ''))
-        if (this.props.maxitems > 0 && this.props.maxitems <= this.props.options.length) {
-          return this.props.maxitems * singleOptionHeight
-        } else {
-          return this.props.options.length * singleOptionHeight
-        }
+          return singleOptionHeight
       }
     }
     return 0
+  }
+
+  #menuHeight () {
+    const singleOptionHeight = this.#singleOptionHeight()
+    if (this.#props.maxitems > 0 && this.#props.maxitems <= this.#props.options.length) {
+      return this.#props.maxitems * singleOptionHeight
+    } else {
+      return this.#props.options.length * singleOptionHeight
+    }
   }
 
   chooseOption(e: Event) {
@@ -287,29 +322,75 @@ export default class Dropdown extends HTMLElement {
     }
   }
 
-  setSelectedOption(cursor: number) {
-    // TODO
-    if (!isNaN(cursor) && cursor >= 0 && cursor < this.props.options.length) {
-      if (this.inputRef !== null) {
-        this.inputRef.value = this.props.options[cursor].value
-      }
-      if (this.resultRef !== null) {
-        this.resultRef.classList.remove('placeholder')
-        this.resultRef.textContent = this.props.options[cursor].name
-        this.hideMenu()
+  mouseEnter(e: Event) {
+    const el = e.target as HTMLElement
+    if (el.hasAttribute('data-index')) {
+      const index = parseInt(String(el.getAttribute('data-index')))
+      if (index >= 0 && Array.isArray(this.#props.options) && index < this.#props.options.length) {
+        this.#cursor = index
+        const prevCursored = this.shadowRoot?.querySelector('.select-option.hover')
+        if (prevCursored !== null && prevCursored !== undefined) {
+          prevCursored.classList.remove('hover')
+        }
+        const option = this.shadowRoot?.querySelector(`.select-option[data-index="${this.#cursor}"]`)
+        if (option !== null && option !== undefined) {
+          option.classList.add('hover')
+        }
       }
     }
   }
 
-  scrollToIndex(index: number) {
-    // TODO
-    console.log("scrollTo", index)
+  setSelectedOption(cursor: number) {
+    if (!isNaN(cursor) && cursor >= 0 && cursor < this.#props.options.length) {
+      this.#selectIndex = cursor
+      if (this.#inputRef !== null) {
+        this.#inputRef.value = this.#props.options[cursor].value
+      }
+      if (this.#resultRef !== null) {
+        this.#resultRef.classList.remove('placeholder')
+        this.#resultRef.textContent = this.#props.options[cursor].name
+        this.hideMenu()
+      }
+      const prevSelected = this.shadowRoot?.querySelector('.select-selected')
+      if (prevSelected !== null && prevSelected !== undefined) {
+        prevSelected.classList.remove('select-selected')
+      }
+      const option = this.shadowRoot?.querySelector(`.select-option[data-index="${cursor}"]`)
+      if (option !== null && option !== undefined) {
+        option.classList.add('select-selected')
+      }
+    }
   }
 
-  setCursor(index: number) {
-    if (index >= 0 && Array.isArray(this.props.options) && index < this.props.options.length) {
-      this.cursor = index
-      console.log("cursorTo", index)
+  #scrollToIndex(index: number) {
+    if (index >= 0 && Array.isArray(this.#props.options) && index < this.#props.options.length) {
+      this.#scrollIndex = index
+      if (this.#optionsRef !== null) {
+        this.#optionsRef.scrollTop = this.#scrollIndex * this.#singleOptionHeight()
+      }
+    }
+  }
+
+  #setCursor(index: number) {
+    if (index >= 0 && Array.isArray(this.#props.options) && index < this.#props.options.length) {
+      this.#cursor = index
+      const prevCursored = this.shadowRoot?.querySelector('.select-option.hover')
+      if (prevCursored !== null && prevCursored !== undefined) {
+        prevCursored.classList.remove('hover')
+      }
+      const option = this.shadowRoot?.querySelector(`.select-option[data-index="${this.#cursor}"]`)
+      if (option !== null && option !== undefined) {
+        option.classList.add('hover')
+      }
+      if (this.#isScrollable()) {
+        if (this.#cursor == this.#scrollIndex + this.#props.maxitems) {
+          this.#scrollToIndex(this.#scrollIndex + 1)
+        } else if (this.#cursor < this.#scrollIndex) {
+          this.#scrollToIndex(this.#cursor)
+        } else if (this.#cursor > this.#scrollIndex + this.#props.maxitems) {
+          this.#scrollToIndex(this.#cursor)
+        }
+      }
     }
   }
 
