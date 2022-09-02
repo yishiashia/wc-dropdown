@@ -1,5 +1,14 @@
 import dropdownStyle from './dropdown.scss'
 
+function getIntAttribute (element: Dropdown, attr: string) {
+  if (element.hasAttribute(attr)) {
+    const num = parseInt(String(element.getAttribute(attr)))
+    return isNaN(num) ? 0 : num
+  } else {
+    return 0
+  }
+}
+
 function getStrAttribute (element: Dropdown, attr: string) {
   if (element.hasAttribute(attr)) {
     return String(element.getAttribute(attr))
@@ -25,10 +34,12 @@ function getArrayAttribute (element: Dropdown, attr: string) {
 export default class Dropdown extends HTMLElement {
 
   props: {
-    name: string;
-    value: string;
-    placeholder: string;
+    name: string
+    value: string
+    placeholder: string
     options: { name: string, value: string }[]
+    startitem: number
+    maxitems: number
   }
   rootRef: HTMLElement | null
   menuRef: HTMLElement | null
@@ -58,7 +69,9 @@ export default class Dropdown extends HTMLElement {
       name: '',
       value: '',
       placeholder: '',
-      options: []
+      options: [],
+      startitem: 0,
+      maxitems: 0
     }
     this.rootRef = null
     this.menuRef = null
@@ -75,7 +88,9 @@ export default class Dropdown extends HTMLElement {
         name: getStrAttribute(this, 'name'),
         value: getStrAttribute(this, 'value'),
         placeholder: getStrAttribute(this, 'placeholder'),
-        options: getArrayAttribute(this, 'options')
+        options: getArrayAttribute(this, 'options'),
+        startitem: getIntAttribute(this, 'startitem'),
+        maxitems: getIntAttribute(this, 'maxitems')
       }
 
       // DOM
@@ -101,6 +116,8 @@ export default class Dropdown extends HTMLElement {
       }
       if (this.rootRef !== null) {
         this.rootRef.addEventListener('blur', this.blur)
+        this.rootRef.addEventListener('keyup', this.handleKeyup)
+        this.rootRef.addEventListener('keydown', this.handleKeydown)
       }
     }
   }
@@ -145,6 +162,14 @@ export default class Dropdown extends HTMLElement {
     if (this.menuRef !== null) {
       this.menuRef.classList.add('expand')
     }
+    if (this.optionsRef !== null) {
+      if (this.props.maxitems <= 0 || this.props.maxitems >= this.props.options.length) {
+        this.optionsRef.style.overflowY = 'hidden'
+      }
+      if (this.menuHeight() > 0) {
+        this.optionsRef.style.height = `${this.menuHeight()}px`
+      }
+    }
   }
 
   hideMenu(): void {
@@ -176,6 +201,7 @@ export default class Dropdown extends HTMLElement {
   handleKeyup (e: KeyboardEvent) {
     if(e.key != "Tab") {
       e.preventDefault()
+      e.stopPropagation()
       if(e.key == " " || e.key == "Enter") {
         if (!this.isExpand()) {
           this.expandMenu()
@@ -225,11 +251,33 @@ export default class Dropdown extends HTMLElement {
   handleKeydown(e: KeyboardEvent) {
     if(e.key != "Tab") {
       e.preventDefault()
+      e.stopPropagation()
     }
   }
 
   isExpand() {
     return this.menuRef !== null && this.menuRef.classList.contains('expand')
+  }
+
+  menuHeight () {
+    if (this.props.options.length > 0 && this.rootRef !== null) {
+      const element = this.rootRef.querySelector('.select-option')
+      if (element !== null) {
+        const style = window.getComputedStyle(element)
+        const singleOptionHeight =
+          Number(style.height.replace('px', '')) +
+          Number(style.paddingTop.replace('px', '')) +
+          Number(style.paddingBottom.replace('px', '')) +
+          Number(style.borderTopWidth.replace('px', '')) +
+          Number(style.borderBottomWidth.replace('px', ''))
+        if (this.props.maxitems > 0 && this.props.maxitems <= this.props.options.length) {
+          return this.props.maxitems * singleOptionHeight
+        } else {
+          return this.props.options.length * singleOptionHeight
+        }
+      }
+    }
+    return 0
   }
 
   chooseOption(e: Event) {

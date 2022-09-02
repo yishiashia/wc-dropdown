@@ -1,6 +1,7 @@
 .container {
   position: relative;
   border: 1px solid rgb(206, 212, 218); position: relative;
+  outline: none;
 }
 
 .custom-select {
@@ -31,6 +32,7 @@
   z-index: 99;
   border-color: #ced4da;
   box-sizing: border-box;
+  overflow-y: auto;
   .select-option, .select-result {
     color: #000;
     padding: 8px 16px;
