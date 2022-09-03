@@ -56,7 +56,6 @@ export default class Dropdown extends HTMLElement {
     this.attachShadow({ mode: 'open' })
 
     // Member functions
-    this.setupOptions = this.setupOptions.bind(this)
     this.toggleMenu = this.toggleMenu.bind(this)
     this.expandMenu = this.expandMenu.bind(this)
     this.hideMenu = this.hideMenu.bind(this)
@@ -106,7 +105,7 @@ export default class Dropdown extends HTMLElement {
       this.#inputRef = this.shadowRoot.querySelector('input')
       this.#resultRef = this.shadowRoot.querySelector('.select-result')
       this.#optionsRef = this.shadowRoot.querySelector('#optionsRef')
-      this.setupOptions()
+      this.#setupOptions()
       this.#realInputRef = document.createElement('input')
       this.#realInputRef.type = 'hidden'
       this.#realInputRef.name = this.#props.name
@@ -135,10 +134,13 @@ export default class Dropdown extends HTMLElement {
   disconnectedCallback () {
   }
 
-  setupOptions(): void {
+  #setupOptions(): void {
     const _self = this
     if (_self.#optionsRef !== null && Array.isArray(_self.#props.options)) {
       _self.#optionsRef.innerHTML = ''
+      _self.#cursor = -1
+      _self.#scrollIndex = 0
+      _self.#selectIndex = -1
       _self.#props.options.forEach((option, index) => {
         const optionSpan = document.createElement('span')
         const optionDiv = document.createElement('div')
@@ -401,6 +403,34 @@ export default class Dropdown extends HTMLElement {
         }
       }
     }
+  }
+
+  set options (options) {
+    if (Array.isArray(options)) {
+      this.#props.options = options
+      this.#selectIndex = -1
+      if (this.#resultRef !== null) {
+        this.#resultRef.textContent = this.#props.placeholder
+        this.#resultRef.classList.add('placeholder')
+      }
+      if (this.#realInputRef !== null) {
+        this.#realInputRef.value = ''
+      }
+      this.#setupOptions()
+    }
+  }
+
+  get options () {
+    return this.#props.options
+  }
+
+  get value () {
+    if (this.#selectIndex >= 0 && this.#selectIndex in this.#props.options) {
+      if (typeof this.#props.options[this.#selectIndex].value === 'string') {
+        return this.#props.options[this.#selectIndex].value
+      }
+    }
+    return ''
   }
 
   template(data: {name: string; value: string; placeholder: string;}) {
