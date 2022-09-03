@@ -42,15 +42,8 @@
     cursor: pointer;
     user-select: none;
   }
-  // &:hover {
-  //   .select-option.hover {
-  //     background-color: #fff;
-  //     color: #000;
-  //   }
-  // }
   .select-option {
     &.select-selected {
-      // background-color: rgba(0, 0, 0, 0.1);
       color: #0199F8;
     }
     &:hover,

@@ -46,6 +46,7 @@ export default class Dropdown extends HTMLElement {
   #inputRef: HTMLInputElement | null
   #resultRef: HTMLElement | null
   #optionsRef: HTMLElement | null
+  #realInputRef: HTMLInputElement | null
   #cursor: number
   #scrollIndex: number
   #selectIndex: number
@@ -80,6 +81,7 @@ export default class Dropdown extends HTMLElement {
     this.#inputRef = null
     this.#resultRef = null
     this.#optionsRef = null
+    this.#realInputRef = null
     this.#cursor = -1
     this.#scrollIndex = 0
     this.#selectIndex = -1
@@ -105,6 +107,10 @@ export default class Dropdown extends HTMLElement {
       this.#resultRef = this.shadowRoot.querySelector('.select-result')
       this.#optionsRef = this.shadowRoot.querySelector('#optionsRef')
       this.setupOptions()
+      this.#realInputRef = document.createElement('input')
+      this.#realInputRef.type = 'hidden'
+      this.#realInputRef.name = this.#props.name
+      this.appendChild(this.#realInputRef)
 
       // Style
       const styleElement = document.createElement('style')
@@ -350,6 +356,9 @@ export default class Dropdown extends HTMLElement {
         this.#resultRef.classList.remove('placeholder')
         this.#resultRef.textContent = this.#props.options[cursor].name
         this.hideMenu()
+      }
+      if (this.#realInputRef !== null) {
+        this.#realInputRef.value = this.#props.options[cursor].value
       }
       const prevSelected = this.shadowRoot?.querySelector('.select-selected')
       if (prevSelected !== null && prevSelected !== undefined) {
