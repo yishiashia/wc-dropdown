@@ -52,7 +52,7 @@ const plugins = [
 
 export default [
   {
-    input: 'src/dropdown.ts',
+    input: 'src/index.ts',
     output: {
       file: 'dist/dropdown.js',
       format: 'umd',

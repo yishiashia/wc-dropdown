@@ -456,5 +456,3 @@ export default class Dropdown extends HTMLElement {
     `
   }
 }
-
-window.customElements.define('dropdown-menu', Dropdown)
