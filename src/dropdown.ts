@@ -103,7 +103,7 @@ export default class Dropdown extends HTMLElement {
       this.#rootRef = this.shadowRoot.querySelector('.container')
       this.#menuRef = this.shadowRoot.querySelector('.custom-select')
       this.#inputRef = this.shadowRoot.querySelector('input')
-      this.#resultRef = this.shadowRoot.querySelector('.select-result')
+      this.#resultRef = this.shadowRoot.querySelector('.result-text')
       this.#optionsRef = this.shadowRoot.querySelector('#optionsRef')
       this.#setupOptions()
       this.#realInputRef = document.createElement('input')
@@ -446,8 +446,9 @@ export default class Dropdown extends HTMLElement {
           style="z-index: 10"
         />
         <div class="custom-select">
-          <div class="select-result form-control placeholder">
-            ${data.placeholder}
+          <div class="select-result form-control">
+            <span class="result-text placeholder">${data.placeholder}</span>
+            <i class="chevron"></i>
           </div>
           <div id="optionsRef" class="shadow-sm select-items select-hide">
           </div>

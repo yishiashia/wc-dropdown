@@ -13,15 +13,6 @@
   display: none;
 }
 
-.select-result:after {
-  float: right;
-  position: relative;
-  content: "";
-  top: 16px;
-  width: 0;
-  height: 0;
-}
-
 .select-items {
   width: 100%;
   position: absolute;
@@ -99,7 +90,7 @@ input.custom.replaced {
   height: 100%;
   padding: 0px !important;
   border: 0 !important;
-  &.expand .select-result {
+  &.expand .select-result i.chevron {
     &:after {
       transform: rotate(135deg);
       -webkit-transform: rotate(135deg);
@@ -115,46 +106,61 @@ input.custom.replaced {
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     height: 100%;
     padding: 0 10px;
     box-sizing: border-box;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    color: #333;
     border: 0px;
-    line-height: calc(2em + 20px);
-    font-size: 16px;
-    color: #121212;
-    letter-spacing: -0.4px;
-    &:after {
-      position: absolute;
-      right: 1rem;
-      top: calc(50% - .375rem);
-
-      display: inline-block;
-      overflow: hidden;
+    .result-text {
+      color: #121212;
+      line-height: calc(2em + 20px);
+      font-size: 16px;
+      letter-spacing: -0.4px;
       text-overflow: ellipsis;
+      overflow: hidden;
       white-space: nowrap;
-
-      border: solid #01BBFE;
-      border-width: 0 0 3px 3px;
-      padding: 3px;
-
-      transform: rotate(-45deg);
-      -webkit-transform: rotate(-45deg);
-
-      -webkit-transition: 100ms ease all;
-      -moz-transition: 100ms ease all;
-      -o-transition: 100ms ease all;
-      transition: 100ms ease all;
+      &.placeholder {
+        color: #999;
+      }
     }
-    &.placeholder {
-      color: #999;
+    i.chevron {
+      position: relative;
+      display: block;
+      height: 100%;
+      width: 14px;
+      &:after {
+        content: "";
+        width: 0;
+        height: 0;
+
+        position: absolute;
+        right: 0;
+        top: calc(50% - .375rem);
+
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        border: solid #01BBFE;
+        border-width: 0 0 3px 3px;
+        padding: 3px;
+
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+
+        -webkit-transition: 100ms ease all;
+        -moz-transition: 100ms ease all;
+        -o-transition: 100ms ease all;
+        transition: 100ms ease all;
+      }
     }
   }
   &.focused {
-    .select-result {
+    .select-result i.chevron {
       &:after {
         border: solid #0199F8;
         border-width: 0 0 3px 3px;
@@ -164,7 +170,7 @@ input.custom.replaced {
 }
 
 .custom-select-input:hover + .custom-select {
-  .select-result {
+  .select-result i.chevron {
     &:after {
       border: solid #0199F8;
       border-width: 0 0 3px 3px;
