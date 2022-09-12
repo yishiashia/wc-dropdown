@@ -54,16 +54,10 @@ class customizedDropdown extends Dropdown {
 ```
 
 ### Options
-- [wc-dropdown](#wc-dropdown)
-  - [Install](#install)
-  - [Syntax](#syntax)
-  - [Demo page](#demo-page)
-  - [Usage](#usage)
-    - [Options](#options)
-      - [placeholder](#placeholder)
-      - [maxitems](#maxitems)
-      - [name](#name)
-      - [options](#options-1)
+ - [placeholder](#placeholder)
+ - [maxitems](#maxitems)
+ - [name](#name)
+ - [options](#options-1)
 
 #### placeholder
 `String` type. The hint words of dropdown menu.
@@ -94,6 +88,34 @@ When passing `options` as element attribute, it must escape the quotes mark, for
   {&quot;name&quot;: &quot;option 2&quot;, &quot;value&quot;: &quot;a2&quot;},
   {&quot;name&quot;: &quot;option 3&quot;, &quot;value&quot;: &quot;a3&quot;}
 ]
+```
+
+Another way to set options is using javascript:
+```js
+let menuElement = document.querySelector('dropdown-menu')
+
+menuElement.options = [
+  {name: "option 1", value: "option_1"},
+  {name: "option 2", value: "option_2"},
+  {name: "option 3", value: "option_3"}
+]
+```
+
+### Event
+
+#### change event
+When user choose one option, a `change` event will be dispatch, and you can bind an event listener to handle it:
+
+```js
+let menuElement = document.querySelector('dropdown-menu')
+
+menuElement.addEventListener('change', function(option) {
+  console.log(option.detail)
+  /*
+    output example:
+      { name: "option 2", value: "option_2" }
+   */
+})
 ```
 
 [wc-image]: https://img.shields.io/badge/webcomponents.org-published-blue.svg?style=flat-square

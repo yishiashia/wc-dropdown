@@ -369,6 +369,8 @@ export default class Dropdown extends HTMLElement {
       const option = this.shadowRoot?.querySelector(`.select-option[data-index="${cursor}"]`)
       if (option !== null && option !== undefined) {
         option.classList.add('select-selected')
+        const evt = new CustomEvent('change', { detail: this.#props.options[cursor] })
+        this.dispatchEvent(evt)
       }
     }
   }
