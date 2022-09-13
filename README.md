@@ -121,8 +121,8 @@ menuElement.addEventListener('change', function(option) {
 [wc-image]: https://img.shields.io/badge/webcomponents.org-published-blue.svg?style=flat-square
 [wc-url]: https://www.webcomponents.org/element/wc-dropdown
 
-[coverage-image]: https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fgist.githubusercontent.com%2Fyishiashia%2Fdee60aefdce58a7559baeb7c5deb3a8b%2Fraw%2Fcbb7f835c18f1d36bc29bf09b426048d452bc90a%2Fwc-dropdown__heads_master.json
-[coverage-url]: https://gist.githubusercontent.com/yishiashia/dee60aefdce58a7559baeb7c5deb3a8b/raw/7c17b27a85415002bdb2344fc73961917402d3a9/wc-dropdown__heads_master.json
+[coverage-image]: https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fgist.githubusercontent.com%2Fyishiashia%2Fdee60aefdce58a7559baeb7c5deb3a8b%2Fraw%2Fwc-dropdown__heads_master.json
+[coverage-url]: https://gist.githubusercontent.com/yishiashia/dee60aefdce58a7559baeb7c5deb3a8b/raw/wc-dropdown__heads_master.json
 
 [js-image]: https://img.shields.io/badge/ES-6%2B-ff69b4.svg?style=flat-square
 [js-url]: https://www.ecma-international.org/ecma-262/6.0/
