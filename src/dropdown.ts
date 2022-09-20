@@ -176,7 +176,9 @@ export default class Dropdown extends HTMLElement {
       this.#menuRef.classList.add('expand')
     }
     if (this.#optionsRef !== null) {
-      if (!this.#isScrollable()) {
+      if (this.#isScrollable()) {
+        this.#optionsRef.style.overflowY = 'auto'
+      } else {
         this.#optionsRef.style.overflowY = 'hidden'
       }
       if (this.#menuHeight() > 0) {
