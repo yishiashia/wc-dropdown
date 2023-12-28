@@ -38,7 +38,8 @@ Dropdown menu web component.
 ```
 
 ## Demo page
-The demo page: https://yishiashia.github.io/dropdown.html
+The demo page: https://yishiashia.github.io/wc-dropdown/
+
 ## Usage
 
 If you want to customize this web component, you can import the library and
